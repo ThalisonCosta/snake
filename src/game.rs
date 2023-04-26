@@ -47,10 +47,10 @@ impl Game {
         }
 
         let dir = match key {
-            Key::Up => Some(Direction::Up),
-            Key::Down => Some(Direction::Down),
-            Key::Left => Some(Direction::Left),
-            Key::Right => Some(Direction::Right),
+            Key::Up | Key::K => Some(Direction::Up),
+            Key::Down | Key::J => Some(Direction::Down),
+            Key::Left  | Key::H => Some(Direction::Left),
+            Key::Right  | Key::L => Some(Direction::Right),
             _ => Some(self.snake.head_direction()),
         };
 

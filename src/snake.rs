@@ -5,7 +5,7 @@ use piston_window::types::Color;
 use crate::draw::draw_block;
 
 const SNAKE_COLOR: Color = [0.00, 0.80, 0.00, 1.0];
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Direction {
     Up,
     Down,
@@ -52,7 +52,7 @@ impl Snake {
         });
 
         Snake {
-            direction: Direction::Right,
+            direction: Direction::Down,
             body,
             tail: None,
         }
