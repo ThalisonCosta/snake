@@ -1,40 +1,43 @@
+use crate::draw::{draw_block, draw_rectangle};
+use crate::snake::{Direction, Snake};
+
+use colored::Colorize;
 use piston_window::types::Color;
 use piston_window::*;
 
 use rand::{thread_rng, Rng};
 
-use crate::draw::{draw_block, draw_rectangle};
-use crate::snake::{Direction, Snake};
 
 const FOOD_COLOR: Color = [0.80, 0.00, 0.00, 1.0];
 const BORDER_COLOR: Color = [0.00, 0.00, 0.00, 1.0];
 const GAMEOVER_COLOR: Color = [0.90, 0.00, 0.00, 0.5];
 
 const MOVING_PERIOD: f64 = 0.1;
-const RESTART_TIME: f64 = 1.0;
+const RESTART_TIME: f64 = 2.0;
 
 pub struct Game {
     snake: Snake,
-
     food_exists: bool,
     food_x: i32,
     food_y: i32,
-
     width: i32,
     height: i32,
-
+    score: u32,
+    pub best_score: u32,
     game_over: bool,
     waiting_time: f64,
 }
 
 impl Game {
-    pub fn new(width: i32, height: i32) -> Game {
+    pub fn new(width: i32, height: i32, best_score: u32) -> Game {
         Game {
             snake: Snake::new(2, 2),
             waiting_time: 0.0,
             food_exists: true,
             food_x: 6,
             food_y: 4,
+            score: 0,
+            best_score,
             width,
             height,
             game_over: false,
@@ -47,10 +50,10 @@ impl Game {
         }
 
         let dir = match key {
-            Key::Up | Key::K => Some(Direction::Up),
-            Key::Down | Key::J => Some(Direction::Down),
-            Key::Left  | Key::H => Some(Direction::Left),
-            Key::Right  | Key::L => Some(Direction::Right),
+            Key::Up | Key::K | Key::W => Some(Direction::Up),
+            Key::Down | Key::J | Key::S => Some(Direction::Down),
+            Key::Left  | Key::H | Key::A => Some(Direction::Left),
+            Key::Right  | Key::L | Key::D => Some(Direction::Right),
             _ => Some(self.snake.head_direction()),
         };
 
@@ -80,12 +83,12 @@ impl Game {
         }
     }
 
-    pub fn update(&mut self, delta_time: f64) {
+    pub fn update(&mut self, delta_time: f64, best_score: u32) {
         self.waiting_time += delta_time;
 
         if self.game_over {
             if self.waiting_time > RESTART_TIME {
-                self.restart();
+                self.restart(best_score);
             }
             return;
         }
@@ -103,6 +106,15 @@ impl Game {
         let (head_x, head_y): (i32, i32) = self.snake.head_position();
         if self.food_exists && self.food_x == head_x && self.food_y == head_y {
             self.food_exists = false;
+            self.score +=1;
+            println!("score: {}", self.score.to_string().green().bold());
+
+            self.best_score = if self.score > self.best_score {
+                self.score
+            } else {
+                self.best_score
+            };
+
             self.snake.restore_tail();
         }
     }
@@ -138,16 +150,19 @@ impl Game {
             self.check_eating();
         } else {
             self.game_over = true;
+            println!("{}\t\tyour record is: {}\n", "\n\nGame Over!!".red().bold(), self.best_score.to_string().blue().bold());
         }
         self.waiting_time = 0.0;
     }
 
-    fn restart(&mut self) {
+    fn restart(&mut self, best_score: u32) {
         self.snake = Snake::new(2, 2);
         self.waiting_time = 0.0;
         self.food_exists = true;
         self.food_x = 6;
         self.food_y = 4;
+        self.score = 0;
+        self.best_score = best_score;
         self.game_over = false;
     }
 }
